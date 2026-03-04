@@ -1,22 +1,38 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof lucide !== 'undefined') lucide.createIcons();
     
-    // Auto-run loadAuditReport if we are on the audit page
+    // If the user is on the audit page, automatically trigger the analysis
     if (window.location.pathname.includes('/audit')) {
         loadAuditReport();
     }
 });
 
+/**
+ * Page 1: analyzer.html Logic
+ */
 function startPolyAudit() {
-    const codeArea = document.getElementById('polyCode');
-    if (!codeArea || !codeArea.value.trim()) return alert("Buffer empty.");
+    const codeArea = document.getElementById('codeIn'); // Matches the ID in analyzer.html
+    if (!codeArea || !codeArea.value.trim()) {
+        alert("Please paste some code first.");
+        return;
+    }
 
-    // Store in localStorage for cross-page persistence
+    // Save to browser memory to use on the next page
     localStorage.setItem('sentinel_pending_code', codeArea.value);
-    window.location.href = '/audit';
+    
+    // Visual feedback: Move to next step
+    const steps = document.querySelectorAll('.step');
+    if(steps[1]) steps[1].classList.add('active');
+
+    // Redirect to the separate audit page
+    setTimeout(() => {
+        window.location.href = '/audit';
+    }, 500);
 }
 
+/**
+ * Page 2: audit.html Logic
+ */
 async function loadAuditReport() {
     const code = localStorage.getItem('sentinel_pending_code');
     if (!code) {
@@ -34,6 +50,7 @@ async function loadAuditReport() {
         const data = await response.json();
 
         if (data.status === "success") {
+            // Populate the Report Page
             document.getElementById('grade').innerText = `Grade ${data.complexity}`;
             document.getElementById('v_count').innerText = data.vector_count;
             
@@ -41,11 +58,13 @@ async function loadAuditReport() {
             gradeEl.style.color = data.complexity === 'A' ? '#3fb950' : '#f85149';
 
             const pBox = document.getElementById('patterns');
-            pBox.innerHTML = data.details.length > 0 
-                ? data.details.map(v => `<span class="tag danger">${v.replace('_', ' ')}</span>`).join('')
-                : '<span class="tag" style="color:#3fb950">INTEGRITY VERIFIED</span>';
+            if (pBox) {
+                pBox.innerHTML = data.details.length > 0 
+                    ? data.details.map(v => `<span class="tag danger">${v.replace('_', ' ')}</span>`).join('')
+                    : '<span class="tag" style="color:#3fb950">INTEGRITY VERIFIED</span>';
+            }
         }
     } catch (err) {
-        console.error("Audit Pipeline Error:", err);
+        console.error("Connection to Backend failed.");
     }
 }
