@@ -2,166 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentinel AI | Logic Command</title>
+    <title>Sentinel AI | Logic Ingestion</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg-obsidian: #010409;
-            --bg-panel: #0d1117;
-            --bg-card: #161b22;
-            --cyan: #3fb1ff;
-            --emerald: #3fb950;
-            --rose: #f85149;
-            --border: #30363d;
+            --bg-dark: #02040a;
+            --panel-hex: #0d1117;
+            --electric-blue: #3fb1ff;
+            --border-muted: #30363d;
             --text-main: #c9d1d9;
-            --text-link: #58a6ff;
+            --text-dim: #8b949e;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.2s; }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
         body {
-            background-color: var(--bg-obsidian);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
             color: var(--text-main);
-            display: flex; height: 100vh; overflow: hidden;
+            font-family: 'Inter', -apple-system, sans-serif;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            padding: 60px 20px;
         }
 
-        /* Navigation Rail */
-        nav {
-            width: 72px; background: var(--bg-obsidian); border-right: 1px solid var(--border);
-            display: flex; flex-direction: column; align-items: center; padding: 25px 0; gap: 20px;
+        /* --- Procedure Tracker --- */
+        .procedure-steps {
+            display: flex; gap: 40px; margin-bottom: 50px; position: relative;
         }
-        .nav-link {
-            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-            border-radius: 8px; cursor: pointer; color: #8b949e;
+        .step { display: flex; align-items: center; gap: 10px; opacity: 0.4; }
+        .step.active { opacity: 1; color: var(--electric-blue); }
+        .step-num { 
+            width: 24px; height: 24px; border: 1px solid currentColor; 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; 
         }
-        .nav-link.active { background: #21262d; color: var(--cyan); border: 1px solid var(--border); }
+        .step-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Main Grid */
-        .app-container { flex: 1; display: grid; grid-template-columns: 280px 1fr 360px; }
+        /* --- Modern Header --- */
+        .header-area { text-align: center; margin-bottom: 40px; }
+        .header-area h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
+        .header-area p { color: var(--text-dim); font-size: 15px; }
 
-        /* Left: History */
-        .history-sidebar { background: var(--bg-panel); border-right: 1px solid var(--border); padding: 24px; overflow-y: auto; }
-        .sidebar-label { font-size: 10px; font-weight: 700; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: block; }
-        .history-card {
-            background: var(--bg-obsidian); border: 1px solid var(--border); padding: 12px; border-radius: 6px;
-            margin-bottom: 10px; cursor: pointer; font-size: 13px;
+        /* --- Auto-Expanding Editor --- */
+        .input-wrapper {
+            width: 100%; max-width: 800px; background: var(--panel-hex);
+            border: 1px solid var(--border-muted); border-radius: 12px;
+            padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
-        .history-card:hover { border-color: var(--text-link); }
-
-        /* Center: Editor */
-        .editor-container { display: flex; flex-direction: column; background: #000; }
-        .editor-header { padding: 12px 24px; background: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
         textarea {
-            flex: 1; background: transparent; color: #7ee787; padding: 30px;
-            font-family: 'ui-monospace', 'SFMono-Regular', 'SF Mono', Menlo, Consolas, monospace;
-            border: none; outline: none; resize: none; font-size: 14px; line-height: 1.6;
+            width: 100%; min-height: 80px; max-height: 600px;
+            background: transparent; border: none; outline: none;
+            color: var(--electric-blue); font-family: 'JetBrains Mono', monospace;
+            font-size: 15px; line-height: 1.6; resize: none; overflow: hidden;
         }
-        .console {
-            height: 180px; background: var(--bg-obsidian); border-top: 1px solid var(--border);
-            padding: 20px; font-family: monospace; font-size: 12px; color: var(--cyan); overflow-y: auto;
-        }
+        textarea::placeholder { color: #484f58; }
 
-        /* Right: Intelligence */
-        .intel-sidebar { background: var(--bg-panel); padding: 30px; overflow-y: auto; border-left: 1px solid var(--border); }
-        .score-box {
-            text-align: center; padding: 30px; background: var(--bg-obsidian);
-            border: 1px solid var(--border); border-radius: 12px; margin-bottom: 24px;
+        /* --- Professional Action --- */
+        .action-footer {
+            margin-top: 30px; display: flex; justify-content: center;
         }
-        .score-val { font-size: 48px; font-weight: 800; color: var(--border); }
-        
-        .methodology-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 20px; }
-        .methodology-box h4 { font-size: 12px; margin-bottom: 8px; color: var(--text-link); }
-        .methodology-box p { font-size: 11px; color: #8b949e; line-height: 1.4; }
-
-        .btn-run {
-            background: #238636; color: white; border: none; padding: 14px; border-radius: 6px;
-            font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+        .btn-audit {
+            background: transparent; color: var(--electric-blue);
+            border: 1px solid var(--electric-blue); padding: 14px 40px;
+            border-radius: 30px; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; gap: 12px;
         }
-        .btn-run:hover { background: #2ea043; }
+        .btn-audit:hover {
+            background: rgba(63, 177, 255, 0.1); transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(63, 177, 255, 0.2);
+        }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="nav-link" onclick="location.href='Dashboard.html'"><i data-lucide="home"></i></div>
-        <div class="nav-link active"><i data-lucide="shield"></i></div>
-        <div class="nav-link"><i data-lucide="settings"></i></div>
-    </nav>
+    <div class="procedure-steps">
+        <div class="step active"><span class="step-num">1</span><span class="step-label">Ingestion</span></div>
+        <div class="step"><span class="step-num">2</span><span class="step-label">Complexity</span></div>
+        <div class="step"><span class="step-num">3</span><span class="step-label">Verification</span></div>
+    </div>
 
-    <main class="app-container">
-        <aside class="history-sidebar">
-            <span class="sidebar-label">Audit History</span>
-            <div id="histList"></div>
-        </aside>
+    <div class="header-area">
+        <h1>Source Logic Audit</h1>
+        <p>Input your code buffer for a deep-spectrum structural analysis.</p>
+    </div>
 
-        <section class="editor-container">
-            <div class="editor-header">
-                <span>BUFFER_KERNEL.py</span>
-                <span style="color: var(--emerald)">● ENGINE_READY</span>
-            </div>
-            <textarea id="codeIn" placeholder="# Paste code for neural analysis..."></textarea>
-            <div class="console" id="logOut">[SYS] Sentinel AI v4.0 Active.</div>
-        </section>
+    <div class="input-wrapper">
+        <textarea id="codeIn" 
+                  placeholder="# Paste Python code here..."
+                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+    </div>
 
-        <aside class="intel-sidebar">
-            <div class="score-box">
-                <span class="sidebar-label">Risk Probability</span>
-                <div class="score-val" id="riskScore">0.0</div>
-                <small id="riskStatus" style="font-weight:700">STABLE</small>
-            </div>
-
-            <div class="methodology-box">
-                <h4><i data-lucide="git-branch" size="12"></i> Complexity Grading</h4>
-                <p>Based on <strong>Cyclomatic Complexity</strong> (Radon). <br> 
-                   <strong>Grade A (1-5):</strong> Linear logic. <br>
-                   <strong>Grade C (11+):</strong> High branching, unmaintainable.
-                </p>
-                <div style="margin-top:10px; font-size:12px;">Current: <strong id="grade">--</strong></div>
-            </div>
-
-            <div class="methodology-box">
-                <h4><i data-lucide="cpu" size="12"></i> Vector Potential</h4>
-                <p>Calculates the density of <strong>Exploit Vectors</strong> (SQLi, XSS, RCE) using keyword entropy and AST pattern matching.</p>
-                <div style="margin-top:10px; font-size:12px;">Vectors: <strong id="vectors">0</strong></div>
-            </div>
-
-            <button class="btn-run" onclick="audit()">
-                <i data-lucide="play" size="16"></i> Execute Neural Audit
-            </button>
-        </aside>
-    </main>
+    <div class="action-footer">
+        <button class="btn-audit" onclick="submitToAudit()">
+            <span>Execute Analysis</span>
+            <i data-lucide="arrow-right" size="18"></i>
+        </button>
+    </div>
 
     <script>
         lucide.createIcons();
-        
-        function audit() {
-            const input = document.getElementById('codeIn').value;
-            const log = document.getElementById('logOut');
-            if(!input) return;
-
-            log.innerHTML = "[INFO] Tokenizing buffer... \n[INFO] Running Scikit-learn Random Forest...\n";
+        function submitToAudit() {
+            const code = document.getElementById('codeIn').value;
+            if(!code) return alert("Buffer empty. Please provide source code.");
             
+            // Visual feedback: Transition the steps
+            document.querySelectorAll('.step')[1].classList.add('active');
+            
+            localStorage.setItem('pending_code', code);
             setTimeout(() => {
-                const score = (Math.random() * (input.match(/(eval|exec|password|SELECT)/gi) ? 0.96 : 0.35)).toFixed(2);
-                const complex = input.length > 400 ? "Grade C" : "Grade A";
-                const threats = (input.match(/(eval|exec|password|SELECT|token|input)/gi) || []).length;
-
-                // Update UI
-                const scoreEl = document.getElementById('riskScore');
-                scoreEl.innerText = score;
-                scoreEl.style.color = score > 0.6 ? "var(--rose)" : "var(--cyan)";
-                
-                document.getElementById('riskStatus').innerText = score > 0.6 ? "CRITICAL" : "SECURE";
-                document.getElementById('riskStatus').style.color = score > 0.6 ? "var(--rose)" : "var(--emerald)";
-                document.getElementById('grade').innerText = complex;
-                document.getElementById('vectors').innerText = threats;
-
-                // Add to History
-                const hist = document.getElementById('histList');
-                hist.innerHTML = `<div class="history-card"><strong>Audit ${score}</strong><br><small>${new Date().toLocaleTimeString()}</small></div>` + hist.innerHTML;
-                
-                log.innerHTML += "[SUCCESS] Audit complete.";
+                window.location.href = '/audit'; // Matches the Flask route in app.py
             }, 800);
         }
     </script>
