@@ -2,113 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentinel AI | Logic Ingestion</title>
+    <title>Sentinel AI | Multi-Language Ingestion</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --bg-dark: #02040a;
-            --panel-hex: #0d1117;
-            --electric-blue: #3fb1ff;
-            --border-muted: #30363d;
-            --text-main: #c9d1d9;
-            --text-dim: #8b949e;
+            --bg: #02040a;
+            --accent: #3fb1ff;
+            --panel: #0d1117;
+            --border: #30363d;
+            --text: #c9d1d9;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; transition: all 0.3s ease; }
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Inter', -apple-system, sans-serif;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-            padding: 60px 20px;
+            background: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif; display: flex; flex-direction: column;
+            align-items: center; padding: 50px 20px;
         }
 
-        /* --- Procedure Tracker --- */
-        .procedure-steps {
-            display: flex; gap: 40px; margin-bottom: 50px; position: relative;
+        /* --- Language Badge --- */
+        .lang-badge {
+            background: rgba(63, 177, 255, 0.1); color: var(--accent);
+            padding: 4px 12px; border-radius: 4px; font-size: 10px;
+            font-weight: 800; border: 1px solid var(--accent);
+            margin-bottom: 20px; text-transform: uppercase;
         }
-        .step { display: flex; align-items: center; gap: 10px; opacity: 0.4; }
-        .step.active { opacity: 1; color: var(--electric-blue); }
-        .step-num { 
-            width: 24px; height: 24px; border: 1px solid currentColor; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; 
+
+        .procedure-line {
+            display: flex; gap: 30px; margin-bottom: 40px; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 2px; color: #8b949e;
         }
-        .step-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .active-step { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
 
-        /* --- Modern Header --- */
-        .header-area { text-align: center; margin-bottom: 40px; }
-        .header-area h1 { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
-        .header-area p { color: var(--text-dim); font-size: 15px; }
-
-        /* --- Auto-Expanding Editor --- */
-        .input-wrapper {
-            width: 100%; max-width: 800px; background: var(--panel-hex);
-            border: 1px solid var(--border-muted); border-radius: 12px;
-            padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        /* --- Expanding Editor --- */
+        .editor-box {
+            width: 100%; max-width: 900px; background: var(--panel);
+            border: 1px solid var(--border); border-radius: 12px; padding: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         textarea {
-            width: 100%; min-height: 80px; max-height: 600px;
-            background: transparent; border: none; outline: none;
-            color: var(--electric-blue); font-family: 'JetBrains Mono', monospace;
-            font-size: 15px; line-height: 1.6; resize: none; overflow: hidden;
+            width: 100%; min-height: 120px; background: transparent;
+            border: none; outline: none; color: var(--accent);
+            font-family: 'JetBrains Mono', monospace; font-size: 14px;
+            line-height: 1.6; resize: none;
         }
-        textarea::placeholder { color: #484f58; }
 
-        /* --- Professional Action --- */
-        .action-footer {
-            margin-top: 30px; display: flex; justify-content: center;
+        .btn-glow {
+            margin-top: 30px; background: transparent; color: var(--accent);
+            border: 1px solid var(--accent); padding: 15px 50px;
+            border-radius: 30px; cursor: pointer; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
         }
-        .btn-audit {
-            background: transparent; color: var(--electric-blue);
-            border: 1px solid var(--electric-blue); padding: 14px 40px;
-            border-radius: 30px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .btn-audit:hover {
-            background: rgba(63, 177, 255, 0.1); transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(63, 177, 255, 0.2);
-        }
+        .btn-glow:hover { background: var(--accent); color: var(--bg); }
     </style>
 </head>
 <body>
 
-    <div class="procedure-steps">
-        <div class="step active"><span class="step-num">1</span><span class="step-label">Ingestion</span></div>
-        <div class="step"><span class="step-num">2</span><span class="step-label">Complexity</span></div>
-        <div class="step"><span class="step-num">3</span><span class="step-label">Verification</span></div>
+    <div class="lang-badge" id="langDetect">Polyglot Mode Active</div>
+
+    <div class="procedure-line">
+        <span class="active-step">01 Ingestion</span>
+        <span>02 Polyglot-Parse</span>
+        <span>03 Audit-Report</span>
     </div>
 
-    <div class="header-area">
-        <h1>Source Logic Audit</h1>
-        <p>Input your code buffer for a deep-spectrum structural analysis.</p>
-    </div>
-
-    <div class="input-wrapper">
-        <textarea id="codeIn" 
-                  placeholder="# Paste Python code here..."
+    <div class="editor-box">
+        <textarea id="polyCode" 
+                  placeholder="// Paste Java, C++, JS, Python, or Ruby code..." 
                   oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
     </div>
 
-    <div class="action-footer">
-        <button class="btn-audit" onclick="submitToAudit()">
-            <span>Execute Analysis</span>
-            <i data-lucide="arrow-right" size="18"></i>
-        </button>
-    </div>
+    <button class="btn-glow" onclick="startPolyAudit()">
+        Analyze Architecture <i data-lucide="zap" size="16"></i>
+    </button>
 
     <script>
         lucide.createIcons();
-        function submitToAudit() {
-            const code = document.getElementById('codeIn').value;
-            if(!code) return alert("Buffer empty. Please provide source code.");
-            
-            // Visual feedback: Transition the steps
-            document.querySelectorAll('.step')[1].classList.add('active');
-            
+        function startPolyAudit() {
+            const code = document.getElementById('polyCode').value;
+            if(!code) return;
             localStorage.setItem('pending_code', code);
-            setTimeout(() => {
-                window.location.href = '/audit'; // Matches the Flask route in app.py
-            }, 800);
+            window.location.href = '/audit';
         }
     </script>
     <script src="main.js"></script>
