@@ -1,7 +1,3 @@
-/**
- * Sentinel AI - Unified Logic Engine
- */
-
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize Lucide Icons
     if (typeof lucide !== 'undefined') {
