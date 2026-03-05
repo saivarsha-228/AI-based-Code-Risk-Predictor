@@ -62,6 +62,25 @@ async function loadAuditReport() {
         const data = await response.json();
 
         if (data.status === "success") {
+            const smellBox = document.getElementById('smellBox');
+            if (smellBox) {
+                smellBox.innerHTML = data.smells.length > 0
+                ? data.smells.map(s => `<span class="v-badge detected">${s}</span>`).join('')
+                : '<span class="v-badge" style="color:#3fb950">No Code Smells</span>';
+            }
+            const sev = document.getElementById('severityLevel');
+            if (sev) {
+                sev.innerText = data.severity;
+                sev.style.color =
+                data.severity === "HIGH" ? "#f85149" :
+                data.severity === "MEDIUM" ? "#f59e0b" :
+                "#3fb950";
+            }
+            // REPORT
+            const reportBox = document.getElementById('reportText');
+            if (reportBox) {
+                reportBox.innerText = data.report;
+            }
             // --- YOUR COMPLEXITY CHART LOGIC ---
             renderAuditCharts(data);
 
